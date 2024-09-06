@@ -43,7 +43,8 @@
 			**/com/assignment/post/mapper/**,
 			**/com/assignment/post/model/**,
 			**/com/assignment/post/repository/**,
-			**/com/assignment/post/util/**
+			**/com/assignment/post/util/**,
+			**/com/assignment/user/PostApplication.java
 		</sonar.exclusions>
 	</properties>
 	<dependencies>
