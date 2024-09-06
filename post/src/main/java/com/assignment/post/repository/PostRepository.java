@@ -1,0 +1,11 @@
+package com.assignment.post.repository;
+
+import com.assignment.post.model.Post;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+import java.util.List;
+
+@Repository
+public interface PostRepository extends JpaRepository<Post, Integer> {
+    List<Post> findPostsByUserId(int userId);
+}
