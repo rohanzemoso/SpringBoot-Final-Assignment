@@ -1,4 +1,4 @@
-package com.assignment.post.service.implementation;
+package com.assignment.post.service;
 
 import com.assignment.post.config.JwtRequestFilter;
 import com.assignment.post.dto.CommentDTO;
@@ -9,20 +9,22 @@ import com.assignment.post.model.Comment;
 import com.assignment.post.model.Post;
 import com.assignment.post.repository.CommentRepository;
 import com.assignment.post.repository.PostRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.junit.MockitoJUnitRunner;
+import com.assignment.post.service.implementation.CommentServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class CommentServiceImplTest {
+@ExtendWith(MockitoExtension.class)
+class CommentServiceImplTest {
 
     @InjectMocks
     private CommentServiceImpl commentService;
@@ -40,8 +42,8 @@ public class CommentServiceImplTest {
     private Comment comment;
     private Post post;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         commentDTO = new CommentDTO();
         commentDTO.setId(1);
         commentDTO.setPostId(1);
@@ -55,7 +57,7 @@ public class CommentServiceImplTest {
     }
 
     @Test
-    public void testCreateComment_Success() {
+    void testCreateComment_Success() {
         JwtRequestFilter.userId = 1;
         when(postRepository.findById(commentDTO.getPostId())).thenReturn(Optional.of(post));
         when(commentMapper.mapToEntity(commentDTO)).thenReturn(comment);
@@ -71,86 +73,75 @@ public class CommentServiceImplTest {
         assertEquals(commentDTO, result);
     }
 
-    @Test(expected = CommentCreationException.class)
-    public void testCreateComment_PostNotFound() {
+    @Test
+    void testCreateComment_PostNotFound() {
         JwtRequestFilter.userId = 1;
         when(postRepository.findById(commentDTO.getPostId())).thenReturn(Optional.empty());
 
-        commentService.createComment(commentDTO);
+        assertThrows(CommentCreationException.class, () -> commentService.createComment(commentDTO));
     }
 
-    @Test(expected = CommentCreationException.class)
-    public void testCreateComment_Exception() {
+    @Test
+    void testCreateComment_Exception() {
         JwtRequestFilter.userId = 1;
         when(postRepository.findById(commentDTO.getPostId())).thenReturn(Optional.of(post));
         when(commentMapper.mapToEntity(commentDTO)).thenReturn(comment);
         when(commentRepository.save(comment)).thenThrow(new RuntimeException());
 
-        commentService.createComment(commentDTO);
+        assertThrows(CommentCreationException.class, () -> commentService.createComment(commentDTO));
     }
 
     @Test
-    public void testDeleteComment_Success() {
+    void testDeleteComment_Success() {
         JwtRequestFilter.userId = 1;
 
-
         Comment comment = mock(Comment.class);
-
-
         when(commentRepository.findById(1)).thenReturn(Optional.of(comment));
         when(comment.getUserId()).thenReturn(1);
 
-
         String result = commentService.deleteComment(1);
-
 
         verify(commentRepository, times(1)).findById(1);
         verify(commentRepository, times(1)).deleteById(1);
         assertEquals("Comment Deleted", result);
     }
 
-
     @Test
-    public void testDeleteComment_UserMismatch() {
+    void testDeleteComment_UserMismatch() {
         JwtRequestFilter.userId = 1;
 
-
         Comment comment = mock(Comment.class);
-
-
         when(commentRepository.findById(1)).thenReturn(Optional.of(comment));
         when(comment.getUserId()).thenReturn(2);
 
-
         String result = commentService.deleteComment(1);
-
 
         verify(commentRepository, times(1)).findById(1);
         verify(commentRepository, never()).deleteById(1);
         assertEquals("Comment is not User's! Cannot Delete", result);
     }
 
-
-    @Test(expected = CommentDeletionException.class)
-    public void testDeleteComment_NotFound() {
+    @Test
+    void testDeleteComment_NotFound() {
         JwtRequestFilter.userId = 1;
         when(commentRepository.findById(1)).thenReturn(Optional.empty());
 
-        commentService.deleteComment(1);
+        assertThrows(CommentDeletionException.class, () -> commentService.deleteComment(1));
     }
 
-    @Test(expected = CommentDeletionException.class)
-    public void testDeleteComment_Exception() {
+    @Test
+    void testDeleteComment_Exception() {
         JwtRequestFilter.userId = 1;
 
         Comment comment = mock(Comment.class);
         when(commentRepository.findById(1)).thenReturn(Optional.of(comment));
         when(comment.getUserId()).thenThrow(new CommentDeletionException("An unexpected error occurred"));
-        commentService.deleteComment(1);
+
+        assertThrows(CommentDeletionException.class, () -> commentService.deleteComment(1));
     }
 
     @Test
-    public void testDeleteComment_Exception1() {
+    void testDeleteComment_Exception1() {
         JwtRequestFilter.userId = 1;
         when(commentRepository.findById(1)).thenThrow(new RuntimeException("Unexpected error"));
 

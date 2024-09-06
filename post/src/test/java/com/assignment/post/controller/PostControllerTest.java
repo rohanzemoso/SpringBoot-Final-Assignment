@@ -6,21 +6,22 @@ import com.assignment.post.exception.post.PostCreationException;
 import com.assignment.post.exception.post.PostNotFoundException;
 import com.assignment.post.exception.post.PostUpdateException;
 import com.assignment.post.service.PostService;
-import com.assignment.post.util.Constants;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class PostControllerTest {
+@ExtendWith(MockitoExtension.class)
+class PostControllerTest {
 
     @InjectMocks
     private PostController postController;
@@ -31,8 +32,8 @@ public class PostControllerTest {
     private PostDTO postDTO1;
     private PostDTO postDTO2;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         postDTO1 = new PostDTO();
         postDTO1.setId(1);
         postDTO1.setUserId(1);
@@ -42,9 +43,8 @@ public class PostControllerTest {
         postDTO2.setUserId(1);
     }
 
-
     @Test
-    public void testGetPostsByUserId_Success() {
+    void testGetPostsByUserId_Success() {
         int userId = 1;
         List<PostDTO> posts = Arrays.asList(postDTO1, postDTO2);
         when(postService.getPostsByUserId(userId)).thenReturn(posts);
@@ -55,16 +55,16 @@ public class PostControllerTest {
         assertEquals(posts, result);
     }
 
-    @Test(expected = PostNotFoundException.class)
-    public void testGetPostsByUserId_NotFound() {
+    @Test
+    void testGetPostsByUserId_NotFound() {
         int userId = 1;
         when(postService.getPostsByUserId(userId)).thenThrow(new PostNotFoundException("Posts not found"));
 
-        postController.getPostsByUserId(userId);
+        assertThrows(PostNotFoundException.class, () -> postController.getPostsByUserId(userId));
     }
 
     @Test
-    public void testGetPostsById_Success() {
+    void testGetPostsById_Success() {
         int id = 1;
         List<PostDTO> posts = Arrays.asList(postDTO1, postDTO2);
         when(postService.getPostsByUserId(id)).thenReturn(posts);
@@ -76,7 +76,7 @@ public class PostControllerTest {
     }
 
     @Test
-    public void testGetPost_Success() {
+    void testGetPost_Success() {
         int id = 1;
         when(postService.getPost(id)).thenReturn(postDTO1);
 
@@ -86,16 +86,16 @@ public class PostControllerTest {
         assertEquals(postDTO1, result);
     }
 
-    @Test(expected = PostNotFoundException.class)
-    public void testGetPost_NotFound() {
+    @Test
+    void testGetPost_NotFound() {
         int id = 1;
         when(postService.getPost(id)).thenThrow(new PostNotFoundException("Post not found"));
 
-        postController.getPost(id);
+        assertThrows(PostNotFoundException.class, () -> postController.getPost(id));
     }
 
     @Test
-    public void testGetPosts_Success() {
+    void testGetPosts_Success() {
         List<PostDTO> posts = Arrays.asList(postDTO1, postDTO2);
         when(postService.getPosts()).thenReturn(posts);
 
@@ -105,15 +105,15 @@ public class PostControllerTest {
         assertEquals(posts, result);
     }
 
-    @Test(expected = PostNotFoundException.class)
-    public void testGetPosts_Failure() {
+    @Test
+    void testGetPosts_Failure() {
         when(postService.getPosts()).thenThrow(new PostNotFoundException("Failed to fetch posts"));
 
-        postController.getPosts();
+        assertThrows(PostNotFoundException.class, () -> postController.getPosts());
     }
 
     @Test
-    public void testCreatePost_Success() {
+    void testCreatePost_Success() {
         JwtRequestFilter.userId = 1;
         when(postService.createPost(any(PostDTO.class))).thenReturn(postDTO1);
 
@@ -123,16 +123,16 @@ public class PostControllerTest {
         assertEquals(postDTO1, result);
     }
 
-    @Test(expected = PostCreationException.class)
-    public void testCreatePost_Failure() {
+    @Test
+    void testCreatePost_Failure() {
         JwtRequestFilter.userId = 1;
         when(postService.createPost(any(PostDTO.class))).thenThrow(new PostCreationException("Failed to create post"));
 
-        postController.createPost(postDTO1);
+        assertThrows(PostCreationException.class, () -> postController.createPost(postDTO1));
     }
 
     @Test
-    public void testDeletePost_Success() {
+    void testDeletePost_Success() {
         int postId = 1;
         JwtRequestFilter.userId = 1;
         String expectedMessage = "Post deleted successfully";
@@ -144,17 +144,17 @@ public class PostControllerTest {
         assertEquals(expectedMessage, result);
     }
 
-    @Test(expected = PostNotFoundException.class)
-    public void testDeletePost_NotFound() {
+    @Test
+    void testDeletePost_NotFound() {
         int postId = 1;
         JwtRequestFilter.userId = 1;
         when(postService.deletePost(postId, JwtRequestFilter.userId)).thenThrow(new PostNotFoundException("Post not found"));
 
-        postController.deletePost(postId);
+        assertThrows(PostNotFoundException.class, () -> postController.deletePost(postId));
     }
 
     @Test
-    public void testUpdatePost_Success() {
+    void testUpdatePost_Success() {
         int postId = 1;
         String expectedMessage = "Post updated successfully";
         when(postService.updatePost(postId, postDTO1)).thenReturn(expectedMessage);
@@ -165,11 +165,11 @@ public class PostControllerTest {
         assertEquals(expectedMessage, result);
     }
 
-    @Test(expected = PostUpdateException.class)
-    public void testUpdatePost_Failure() {
+    @Test
+    void testUpdatePost_Failure() {
         int postId = 1;
         when(postService.updatePost(postId, postDTO1)).thenThrow(new PostUpdateException("Failed to update post"));
 
-        postController.updatePost(postId, postDTO1);
+        assertThrows(PostUpdateException.class, () -> postController.updatePost(postId, postDTO1));
     }
 }

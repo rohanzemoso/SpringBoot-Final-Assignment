@@ -1,4 +1,4 @@
-package com.assignment.post.service.implementation;
+package com.assignment.post.service;
 
 import com.assignment.post.config.JwtRequestFilter;
 import com.assignment.post.dto.PostDTO;
@@ -8,21 +8,25 @@ import com.assignment.post.exception.post.PostUpdateException;
 import com.assignment.post.mapper.PostMapper;
 import com.assignment.post.model.Post;
 import com.assignment.post.repository.PostRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.junit.MockitoJUnitRunner;
+import com.assignment.post.service.implementation.PostServiceImpl;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class PostServiceImplTest {
+@ExtendWith(MockitoExtension.class)
+class PostServiceImplTest {
 
     @Mock
     private PostRepository postRepository;
@@ -36,14 +40,14 @@ public class PostServiceImplTest {
     private Post post;
     private PostDTO postDTO;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
         post = new Post(1, "Content", 1, null);
         postDTO = new PostDTO(1, "Content", 1, null);
     }
 
     @Test
-    public void testCreatePost_Success() {
+    void testCreatePost_Success() {
         when(postMapper.dtoToEntity(postDTO)).thenReturn(post);
         when(postRepository.save(post)).thenReturn(post);
         when(postMapper.entitytoDTO(post)).thenReturn(postDTO);
@@ -56,31 +60,28 @@ public class PostServiceImplTest {
         verify(postMapper, times(1)).entitytoDTO(post);
     }
 
-    @Test(expected = PostCreationException.class)
-    public void testCreatePost_Exception() {
+    @Test
+    void testCreatePost_Exception() {
         when(postMapper.dtoToEntity(postDTO)).thenThrow(new RuntimeException("Exception"));
 
-        postService.createPost(postDTO);
+        assertThrows(PostCreationException.class, () -> postService.createPost(postDTO));
     }
 
-    @Test(expected = RuntimeException.class)
-    public void testUpdatePost_PostNotFound() {
-         int postId = 1;
+    @Test
+    void testUpdatePost_PostNotFound() {
+        int postId = 1;
         int userId = 1;
         PostDTO newContent = new PostDTO(postId, "New Content", userId, null);
 
-         JwtRequestFilter.userId = userId;
+        JwtRequestFilter.userId = userId;
 
-         when(postRepository.findById(postId)).thenReturn(Optional.empty());
+        when(postRepository.findById(postId)).thenReturn(Optional.empty());
 
-         postService.updatePost(postId, newContent);
-
-
+        assertThrows(PostUpdateException.class, () -> postService.updatePost(postId, newContent));
     }
 
-
     @Test
-    public void testDeletePost_Success() {
+    void testDeletePost_Success() {
         when(postRepository.findById(1)).thenReturn(Optional.of(post));
 
         String result = postService.deletePost(1, 1);
@@ -90,7 +91,7 @@ public class PostServiceImplTest {
     }
 
     @Test
-    public void testDeletePost_NotOwned() {
+    void testDeletePost_NotOwned() {
         when(postRepository.findById(1)).thenReturn(Optional.of(post));
 
         String result = postService.deletePost(1, 2);
@@ -99,15 +100,15 @@ public class PostServiceImplTest {
         verify(postRepository, never()).deleteById(anyInt());
     }
 
-    @Test(expected = PostNotFoundException.class)
-    public void testDeletePost_NotFound() {
+    @Test
+    void testDeletePost_NotFound() {
         when(postRepository.findById(1)).thenReturn(Optional.empty());
 
-        postService.deletePost(1, 1);
+        assertThrows(PostNotFoundException.class, () -> postService.deletePost(1, 1));
     }
 
     @Test
-    public void testGetPost_Success() {
+    void testGetPost_Success() {
         when(postRepository.findById(1)).thenReturn(Optional.of(post));
         when(postMapper.entitytoDTO(post)).thenReturn(postDTO);
 
@@ -118,15 +119,15 @@ public class PostServiceImplTest {
         verify(postMapper, times(1)).entitytoDTO(post);
     }
 
-    @Test(expected = PostNotFoundException.class)
-    public void testGetPost_NotFound() {
+    @Test
+    void testGetPost_NotFound() {
         when(postRepository.findById(1)).thenReturn(Optional.empty());
 
-        postService.getPost(1);
+        assertThrows(PostNotFoundException.class, () -> postService.getPost(1));
     }
 
     @Test
-    public void testGetPosts_Success() {
+    void testGetPosts_Success() {
         List<Post> posts = Arrays.asList(post);
         List<PostDTO> postDTOs = Arrays.asList(postDTO);
         when(postRepository.findAll()).thenReturn(posts);
@@ -139,17 +140,17 @@ public class PostServiceImplTest {
         verify(postMapper, times(1)).entitytoDTO(post);
     }
 
-    @Test(expected = PostNotFoundException.class)
-    public void testGetPosts_Exception() {
+    @Test
+    void testGetPosts_Exception() {
         when(postRepository.findAll()).thenThrow(new RuntimeException("Error fetching posts"));
 
-        postService.getPosts();
+        assertThrows(PostNotFoundException.class, () -> postService.getPosts());
     }
 
     @Test
-    public void testUpdatePost_Success() {
+    void testUpdatePost_Success() {
         when(postRepository.findById(1)).thenReturn(Optional.of(post));
-        JwtRequestFilter.userId = 1; // Mocking static field
+        JwtRequestFilter.userId = 1;
         postDTO.setContent("Updated Content");
 
         String result = postService.updatePost(1, postDTO);
@@ -159,9 +160,9 @@ public class PostServiceImplTest {
     }
 
     @Test
-    public void testUpdatePost_NotOwned() {
+    void testUpdatePost_NotOwned() {
         when(postRepository.findById(1)).thenReturn(Optional.of(post));
-        JwtRequestFilter.userId = 2; // Mocking static field
+        JwtRequestFilter.userId = 2;
 
         String result = postService.updatePost(1, postDTO);
 
@@ -169,15 +170,15 @@ public class PostServiceImplTest {
         verify(postRepository, never()).save(any(Post.class));
     }
 
-    @Test(expected = PostUpdateException.class)
-    public void testUpdatePost_Exception() {
+    @Test
+    void testUpdatePost_Exception() {
         when(postRepository.findById(1)).thenThrow(new RuntimeException("Post not found"));
 
-        postService.updatePost(1, postDTO);
+        assertThrows(PostUpdateException.class, () -> postService.updatePost(1, postDTO));
     }
 
     @Test
-    public void testGetPostsByUserId_Success() {
+    void testGetPostsByUserId_Success() {
         List<Post> posts = Arrays.asList(post);
         when(postRepository.findPostsByUserId(1)).thenReturn(posts);
         when(postMapper.entitytoDTO(post)).thenReturn(postDTO);
@@ -189,10 +190,10 @@ public class PostServiceImplTest {
         verify(postMapper, times(1)).entitytoDTO(post);
     }
 
-    @Test(expected = PostNotFoundException.class)
-    public void testGetPostsByUserId_Exception() {
+    @Test
+    void testGetPostsByUserId_Exception() {
         when(postRepository.findPostsByUserId(1)).thenThrow(new RuntimeException("Error fetching posts by user ID"));
 
-        postService.getPostsByUserId(1);
+        assertThrows(PostNotFoundException.class, () -> postService.getPostsByUserId(1));
     }
 }
