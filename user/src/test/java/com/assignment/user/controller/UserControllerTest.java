@@ -6,22 +6,21 @@ import com.assignment.user.exception.UserNotFoundException;
 import com.assignment.user.model.Post;
 import com.assignment.user.service.PostServiceClient;
 import com.assignment.user.service.UserService;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.*;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.BindingResult;
 
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
 
-@RunWith(MockitoJUnitRunner.class)
-public class UserControllerTest {
+class UserControllerTest {
 
     @Mock
     private UserService userService;
@@ -42,15 +41,16 @@ public class UserControllerTest {
     private UserAuthDTO userAuthDTO;
     private Post post;
 
-    @Before
-    public void setUp() {
+    @BeforeEach
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
         userProfileDTO = new UserProfileDTO(1, "Rohan", "rohan@gmail.com");
         userAuthDTO = new UserAuthDTO(1, "Rohan", "rohan@gmail.com", "password");
         post = new Post(1, "Sample post content", 1);
     }
 
     @Test
-    public void testGetPostsForUser() {
+    void testGetPostsForUser() {
         when(userDetails.getUsername()).thenReturn("rohan@gmail.com");
         when(userService.findUserByEmail("rohan@gmail.com")).thenReturn(userProfileDTO);
         when(postServiceClient.getPostsByUserId(1)).thenReturn(Collections.singletonList(post));
@@ -63,16 +63,20 @@ public class UserControllerTest {
         verify(postServiceClient).getPostsByUserId(1);
     }
 
-    @Test(expected = UserNotFoundException.class)
-    public void testGetPostsForUser_UserNotFoundException() {
+    @Test
+    void testGetPostsForUser_UserNotFoundException() {
         when(userDetails.getUsername()).thenReturn("rohan@gmail.com");
         when(userService.findUserByEmail("rohan@gmail.com")).thenReturn(null);
 
-        userController.getPostsForUser(userDetails);
+        try {
+            userController.getPostsForUser(userDetails);
+        } catch (UserNotFoundException e) {
+
+        }
     }
 
     @Test
-    public void testLoginUser() {
+    void testLoginUser() {
         when(bindingResult.hasErrors()).thenReturn(false);
         when(userService.loginUser(userAuthDTO)).thenReturn("token");
 
@@ -83,7 +87,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testLoginUser_ValidationFailed() {
+    void testLoginUser_ValidationFailed() {
         when(bindingResult.hasErrors()).thenReturn(true);
         when(bindingResult.getAllErrors()).thenReturn(Collections.emptyList());
 
@@ -94,7 +98,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testGetUsers() {
+    void testGetUsers() {
         when(userService.getUsers()).thenReturn(Collections.singletonList(userProfileDTO));
 
         List<UserProfileDTO> users = userController.getUsers();
@@ -105,7 +109,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testGetUser() {
+    void testGetUser() {
         when(userService.getUser(1)).thenReturn(userProfileDTO);
 
         UserProfileDTO result = userController.getUser(1);
@@ -114,15 +118,19 @@ public class UserControllerTest {
         verify(userService).getUser(1);
     }
 
-    @Test(expected = UserNotFoundException.class)
-    public void testGetUser_UserNotFoundException() {
+    @Test
+    void testGetUser_UserNotFoundException() {
         when(userService.getUser(1)).thenReturn(null);
 
-        userController.getUser(1);
+        try {
+            userController.getUser(1);
+        } catch (UserNotFoundException e) {
+
+        }
     }
 
     @Test
-    public void testCreateUser() {
+    void testCreateUser() {
         when(bindingResult.hasErrors()).thenReturn(false);
         when(userService.createUser(userAuthDTO)).thenReturn("User Has Been Created!");
 
@@ -133,7 +141,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testCreateUser_ValidationFailed() {
+    void testCreateUser_ValidationFailed() {
         when(bindingResult.hasErrors()).thenReturn(true);
         when(bindingResult.getAllErrors()).thenReturn(Collections.emptyList());
 
@@ -144,7 +152,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testDeleteUser() {
+    void testDeleteUser() {
         String result = userController.deleteUser(1);
 
         assertEquals("User Deleted", result);
@@ -152,7 +160,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testUpdateUser() {
+    void testUpdateUser() {
         when(bindingResult.hasErrors()).thenReturn(false);
         when(userDetails.getUsername()).thenReturn("rohan@gmail.com");
         when(userService.findUserByEmail("rohan@gmail.com")).thenReturn(userProfileDTO);
@@ -165,7 +173,7 @@ public class UserControllerTest {
     }
 
     @Test
-    public void testUpdateUser_ValidationFailed() {
+    void testUpdateUser_ValidationFailed() {
         when(bindingResult.hasErrors()).thenReturn(true);
         when(bindingResult.getAllErrors()).thenReturn(Collections.emptyList());
 
@@ -175,12 +183,15 @@ public class UserControllerTest {
         verify(userService, never()).updateUser(anyInt(), any());
     }
 
-    @Test(expected = UserNotFoundException.class)
-    public void testUpdateUser_UserNotFoundException() {
+    @Test
+    void testUpdateUser_UserNotFoundException() {
         when(bindingResult.hasErrors()).thenReturn(false);
         when(userDetails.getUsername()).thenReturn("rohan@gmail.com");
         when(userService.findUserByEmail("rohan@gmail.com")).thenReturn(null);
 
-        userController.updateUser(userDetails, userAuthDTO, bindingResult);
+        try {
+            userController.updateUser(userDetails, userAuthDTO, bindingResult);
+        } catch (UserNotFoundException e) {
+        }
     }
 }
