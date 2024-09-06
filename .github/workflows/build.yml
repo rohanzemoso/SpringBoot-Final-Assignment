@@ -39,7 +39,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
           cd user
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rohanzemoso_microservices_user -Dsonar.host.url=https://sonarcloud.io
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rohanzemoso_microservices -Dsonar.host.url=https://sonarcloud.io
       - name: Build and analyze post
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -49,4 +49,4 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
           cd post
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rohanzemoso_microservices_post -Dsonar.host.url=https://sonarcloud.io
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rohanzemoso_microservices -Dsonar.host.url=https://sonarcloud.io
