@@ -42,7 +42,8 @@
 			**/com/assignment/user/mapper/**,
 			**/com/assignment/user/model/**,
 			**/com/assignment/user/repository/**,
-			**/com/assignment/user/util/**
+			**/com/assignment/user/util/**,
+			**/com/assignment/user/UserApplication.java
 		</sonar.exclusions>
 	</properties>
 	<dependencies>
