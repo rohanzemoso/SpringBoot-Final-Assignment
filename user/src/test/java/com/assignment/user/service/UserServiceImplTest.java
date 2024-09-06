@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-public class UserServiceImplTest {
+class UserServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
@@ -56,7 +56,7 @@ public class UserServiceImplTest {
     private Authentication authentication;
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
         user = new User(1, "Rohan", "rohan@gmail.com", "password", null);
         userAuthDTO = new UserAuthDTO(1, "Rohan", "rohan@gmail.com", "password");
@@ -65,7 +65,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testLoginUser_SuccessfulAuthentication() throws Exception {
+    void testLoginUser_SuccessfulAuthentication() throws Exception {
         when(userMapper.UserDTOtoEntity(userAuthDTO)).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
@@ -86,7 +86,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testLoginUser_UserNotFound() throws Exception {
+    void testLoginUser_UserNotFound() throws Exception {
         when(userMapper.UserDTOtoEntity(userAuthDTO)).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
@@ -100,7 +100,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testLoginUser_AuthenticationFailed() throws Exception {
+    void testLoginUser_AuthenticationFailed() throws Exception {
         when(userMapper.UserDTOtoEntity(userAuthDTO)).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
@@ -113,7 +113,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testLoginUser_ExceptionThrown() throws Exception {
+    void testLoginUser_ExceptionThrown() throws Exception {
         when(userMapper.UserDTOtoEntity(userAuthDTO)).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenAnswer((Answer<Authentication>) invocation -> {
@@ -126,7 +126,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testCreateUser_Success() {
+    void testCreateUser_Success() {
         when(userMapper.UserDTOtoEntity(userAuthDTO)).thenReturn(user);
         when(bCryptPasswordEncoder.encode(userAuthDTO.getPassword())).thenReturn("encodedPassword");
         when(userRepository.save(user)).thenReturn(user);
@@ -140,7 +140,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testCreateUser_Exception() {
+    void testCreateUser_Exception() {
         when(userMapper.UserDTOtoEntity(userAuthDTO)).thenReturn(user);
         doThrow(RuntimeException.class).when(userRepository).save(user);
 
@@ -148,7 +148,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testGetUser_Success() {
+    void testGetUser_Success() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userMapper.toDTOWithoutPassword(user)).thenReturn(userProfileDTO);
 
@@ -161,14 +161,14 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testGetUser_UserNotFound() {
+    void testGetUser_UserNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.getUser(1));
     }
 
     @Test
-    public void testGetUsers_Success() {
+    void testGetUsers_Success() {
         List<User> userList = Collections.singletonList(user);
         when(userRepository.findAll()).thenReturn(userList);
         when(userMapper.toDTOWithoutPassword(user)).thenReturn(userProfileDTO);
@@ -181,14 +181,14 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testGetUsers_Exception() {
+    void testGetUsers_Exception() {
         when(userRepository.findAll()).thenThrow(RuntimeException.class);
 
         assertThrows(UserNotFoundException.class, () -> userService.getUsers());
     }
 
     @Test
-    public void testDeleteUser_Success() {
+    void testDeleteUser_Success() {
         doNothing().when(userRepository).deleteById(1L);
 
         userService.deleteUser(1);
@@ -197,14 +197,14 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testDeleteUser_Exception() {
+     void testDeleteUser_Exception() {
         doThrow(RuntimeException.class).when(userRepository).deleteById(1L);
 
         assertThrows(UserNotFoundException.class, () -> userService.deleteUser(1));
     }
 
     @Test
-    public void testFindUserByEmail_Success() {
+     void testFindUserByEmail_Success() {
         when(userRepository.findUserByEmail("rohan@gmail.com")).thenReturn(user);
         when(userMapper.toDTOWithoutPassword(user)).thenReturn(userProfileDTO);
 
@@ -217,14 +217,14 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testFindUserByEmail_UserNotFound() {
+     void testFindUserByEmail_UserNotFound() {
         when(userRepository.findUserByEmail("rohan@gmail.com")).thenReturn(null);
 
         assertThrows(UserNotFoundException.class, () -> userService.findUserByEmail("rohan@gmail.com"));
     }
 
     @Test
-    public void testUpdateUser_Success() {
+      void testUpdateUser_Success() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
 
@@ -236,7 +236,7 @@ public class UserServiceImplTest {
     }
 
     @Test
-    public void testUpdateUser_UserNotFound() {
+     void testUpdateUser_UserNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
         assertThrows(UserNotFoundException.class, () -> userService.updateUser(1, userAuthDTO));
