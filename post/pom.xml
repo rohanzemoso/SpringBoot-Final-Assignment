@@ -44,7 +44,7 @@
 			**/com/assignment/post/model/**,
 			**/com/assignment/post/repository/**,
 			**/com/assignment/post/util/**,
-			**/com/assignment/user/PostApplication.java
+			**/com/assignment/post/PostApplication.java
 		</sonar.exclusions>
 	</properties>
 	<dependencies>
