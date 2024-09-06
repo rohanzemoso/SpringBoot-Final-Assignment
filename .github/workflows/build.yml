@@ -38,8 +38,8 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
           cd service-a
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=huaha_microservices_service_a -Dsonar.host.url=https://sonarcloud.io
-      - name: Build and analyze service-b
+          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rohanzemoso_microservices -Dsonar.host.url=https://sonarcloud.io
+      - name: Build and analyze post
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DB_URL: ${{ secrets.DB_URL }}
@@ -47,14 +47,4 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
         run: |
           cd service-b
-          mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=huaha_microservices_service_b -Dsonar.host.url=https://sonarcloud.io
-      - name: Build and analyze api-gateway
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          DB_URL: ${{ secrets.DB_URL }}
-          DB_USERNAME: ${{ secrets.DB_USERNAME }}
-          DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-        run: |
-          cd api-gateway
           mvn -B verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.projectKey=rohanzemoso_microservices -Dsonar.host.url=https://sonarcloud.io
