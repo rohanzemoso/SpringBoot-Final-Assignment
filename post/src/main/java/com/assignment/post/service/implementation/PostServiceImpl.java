@@ -130,7 +130,7 @@ public class PostServiceImpl implements PostService {
             List<Post> posts = postRepository.findPostsByUserId(userId);
             return posts.stream()
                     .map(postMapper::entitytoDTO)
-                    .collect(Collectors.toList());
+                    .toList();
         } catch (Exception e) {
             log.error("Error occurred while fetching posts by user ID");
             throw new PostNotFoundException("An unexpected error occurred while fetching posts by user ID");

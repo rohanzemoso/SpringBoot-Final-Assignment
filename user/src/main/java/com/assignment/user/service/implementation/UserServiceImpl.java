@@ -111,7 +111,7 @@ public class UserServiceImpl implements UserService {
             List<User> users = userRepository.findAll();
             return users.stream()
                     .map(userMapper::toDTOWithoutPassword)
-                    .collect(Collectors.toList());
+                    .toList();
         } catch (Exception e) {
             log.error("Error during getUsers");
             throw new UserNotFoundException("Error occurred while retrieving users");

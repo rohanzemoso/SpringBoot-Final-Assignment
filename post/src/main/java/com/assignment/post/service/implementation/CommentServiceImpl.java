@@ -38,10 +38,10 @@ public class CommentServiceImpl implements CommentService {
                             new CommentCreationException("No post found with the given post id")
                     );
 
-            Comment comment = commentMapper.mapToEntity(commentDTO);
-            comment.setPost(post);
+            Comment commentObject = commentMapper.mapToEntity(commentDTO);
+            commentObject.setPost(post);
 
-            Comment savedComment = commentRepository.save(comment);
+            Comment savedComment = commentRepository.save(commentObject);
             log.info("Comment created successfully");
 
             return commentMapper.mapToDTO(savedComment);

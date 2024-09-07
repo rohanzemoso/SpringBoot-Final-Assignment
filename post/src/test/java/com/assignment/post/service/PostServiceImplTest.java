@@ -129,7 +129,6 @@ class PostServiceImplTest {
     @Test
     void testGetPosts_Success() {
         List<Post> posts = Arrays.asList(post);
-        List<PostDTO> postDTOs = Arrays.asList(postDTO);
         when(postRepository.findAll()).thenReturn(posts);
         when(postMapper.entitytoDTO(post)).thenReturn(postDTO);
 
