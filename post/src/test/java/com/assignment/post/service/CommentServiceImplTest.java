@@ -95,9 +95,9 @@ class CommentServiceImplTest {
     void testDeleteComment_Success() {
         JwtRequestFilter.userId = 1;
 
-        Comment comment = mock(Comment.class);
-        when(commentRepository.findById(1)).thenReturn(Optional.of(comment));
-        when(comment.getUserId()).thenReturn(1);
+        Comment commentObj = mock(Comment.class);
+        when(commentRepository.findById(1)).thenReturn(Optional.of(commentObj));
+        when(commentObj.getUserId()).thenReturn(1);
 
         String result = commentService.deleteComment(1);
 
