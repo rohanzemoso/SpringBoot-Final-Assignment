@@ -90,7 +90,7 @@ public class PostServiceImpl implements PostService {
             List<Post> posts = postRepository.findAll();
             return posts.stream()
                     .map(postMapper::entitytoDTO)
-                    .collect(Collectors.toList());
+                    .toList();
         } catch (Exception e) {
             log.error("Error occurred while fetching all posts");
             throw new PostNotFoundException("An unexpected error occurred while fetching the posts");

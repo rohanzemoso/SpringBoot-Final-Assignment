@@ -110,9 +110,9 @@ class CommentServiceImplTest {
     void testDeleteComment_UserMismatch() {
         JwtRequestFilter.userId = 1;
 
-        Comment comment = mock(Comment.class);
-        when(commentRepository.findById(1)).thenReturn(Optional.of(comment));
-        when(comment.getUserId()).thenReturn(2);
+        Comment commentObject = mock(Comment.class);
+        when(commentRepository.findById(1)).thenReturn(Optional.of(commentObject));
+        when(commentObject.getUserId()).thenReturn(2);
 
         String result = commentService.deleteComment(1);
 
