@@ -133,9 +133,9 @@ class CommentServiceImplTest {
     void testDeleteComment_Exception() {
         JwtRequestFilter.userId = 1;
 
-        Comment comment = mock(Comment.class);
-        when(commentRepository.findById(1)).thenReturn(Optional.of(comment));
-        when(comment.getUserId()).thenThrow(new CommentDeletionException("An unexpected error occurred"));
+        Comment commentObj = mock(Comment.class);
+        when(commentRepository.findById(1)).thenReturn(Optional.of(commentObj));
+        when(commentObj.getUserId()).thenThrow(new CommentDeletionException("An unexpected error occurred"));
 
         assertThrows(CommentDeletionException.class, () -> commentService.deleteComment(1));
     }
