@@ -2,7 +2,6 @@ package com.assignment.user.service.implementation;
 
 import com.assignment.user.config.JWTService;
 import com.assignment.user.dto.UserAuthDTO;
-import com.assignment.user.dto.UserPasswordDTO;
 import com.assignment.user.dto.UserProfileDTO;
 import com.assignment.user.exception.UserCreationException;
 import com.assignment.user.exception.UserNotFoundException;
@@ -11,7 +10,6 @@ import com.assignment.user.model.User;
 import com.assignment.user.repository.UserRepository;
 import com.assignment.user.service.UserService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.persistence.Id;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -55,7 +53,7 @@ public class UserServiceImpl implements UserService {
     public String loginUser(UserAuthDTO userDTO) {
         log.info("loginUser method called");
         try {
-            User user = userMapper.userDTOtoEntity(userDTO);
+            User user = userMapper.UserDTOtoEntity(userDTO);
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
             );
@@ -83,7 +81,7 @@ public class UserServiceImpl implements UserService {
     public String createUser(UserAuthDTO userDTO) {
         log.info("createUser method called");
         try {
-            User user = userMapper.userDTOtoEntity(userDTO);
+            User user = userMapper.UserDTOtoEntity(userDTO);
             user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
             userRepository.save(user);
             return "User Has Been Created!";
@@ -113,7 +111,7 @@ public class UserServiceImpl implements UserService {
             List<User> users = userRepository.findAll();
             return users.stream()
                     .map(userMapper::toDTOWithoutPassword)
-                    .collect(Collectors.toList());
+                    .toList();
         } catch (Exception e) {
             log.error("Error during getUsers");
             throw new UserNotFoundException("Error occurred while retrieving users");
@@ -155,6 +153,7 @@ public class UserServiceImpl implements UserService {
 
             existingUser.setName(userDTO.getName());
             existingUser.setEmail(userDTO.getEmail());
+
             userRepository.save(existingUser);
             return "User Has Been Updated";
         } catch (Exception e) {
@@ -162,29 +161,4 @@ public class UserServiceImpl implements UserService {
             throw new UserNotFoundException("Error occurred while updating user");
         }
     }
-
-    @Override
-    public String updatePassword(int id, UserPasswordDTO userPasswordDTO) {
-        log.info("updatePassword method called");
-        try {
-            User existingUser = userRepository.findById((long) id)
-                    .orElseThrow(() -> new UserNotFoundException("User not found"));
-
-
-            if (!bCryptPasswordEncoder.matches(userPasswordDTO.getOldPassword(), existingUser.getPassword())) {
-                return "failure: incorrect current password";
-            }
-
-            existingUser.setPassword(bCryptPasswordEncoder.encode(userPasswordDTO.getNewPassword()));
-
-            userRepository.save(existingUser);
-
-            return "Password has been updated successfully";
-        } catch (Exception e) {
-            log.error("Error during updatePassword", e);
-            throw new UserNotFoundException("Error occurred while updating password");
-        }
-    }
-
-
 }

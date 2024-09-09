@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">user</a> &gt; <a href="index.source.html" class="el_package">com.assignment.user.controller</a> &gt; <span class="el_source">UserController.java</span></div><h1>UserController.java</h1><pre class="source lang-java linenums">package com.assignment.user.controller;
+
+import com.assignment.user.util.Constants;
+import com.assignment.user.dto.UserProfileDTO;
+import com.assignment.user.dto.UserAuthDTO;
+import com.assignment.user.model.Post;
+import com.assignment.user.service.PostServiceClient;
+import com.assignment.user.service.UserService;
+import com.assignment.user.exception.UserNotFoundException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
+import org.springframework.validation.BindingResult;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(Constants.USER_BASE_URL)
+public class UserController {
+
+    private final UserService userService;
+    private final PostServiceClient postServiceClient;
+
+    @Autowired
+<span class="fc" id="L27">    public UserController(UserService userService, PostServiceClient postServiceClient) {</span>
+<span class="fc" id="L28">        this.userService = userService;</span>
+<span class="fc" id="L29">        this.postServiceClient = postServiceClient;</span>
+<span class="fc" id="L30">    }</span>
+
+    @GetMapping(Constants.GET_POSTS)
+    public List&lt;Post&gt; getPostsForUser(@AuthenticationPrincipal UserDetails userDetails) {
+<span class="fc" id="L34">        String username = userDetails.getUsername();</span>
+<span class="fc" id="L35">        UserProfileDTO userDTO = userService.findUserByEmail(username);</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        if (userDTO == null) {</span>
+<span class="fc" id="L37">            throw new UserNotFoundException(&quot;User not found with email: &quot; + username);</span>
+        }
+<span class="fc" id="L39">        int userID = userDTO.getUserId();</span>
+<span class="fc" id="L40">        return postServiceClient.getPostsByUserId(userID);</span>
+    }
+
+    @PostMapping(Constants.LOGIN_USER)
+    public String loginUser(@Valid @RequestBody UserAuthDTO userAuthDTO, BindingResult result) {
+<span class="fc bfc" id="L45" title="All 2 branches covered.">        if (result.hasErrors()) {</span>
+<span class="fc" id="L46">            return &quot;Validation failed: &quot; + result.getAllErrors();</span>
+        }
+<span class="fc" id="L48">        return userService.loginUser(userAuthDTO);</span>
+    }
+
+    @GetMapping(Constants.GET_USERS)
+    public List&lt;UserProfileDTO&gt; getUsers() {
+<span class="fc" id="L53">        return userService.getUsers();</span>
+    }
+
+    @GetMapping(Constants.GET_USER_BY_ID)
+    public UserProfileDTO getUser(@PathVariable int id) {
+<span class="fc" id="L58">        UserProfileDTO userDTO = userService.getUser(id);</span>
+<span class="fc bfc" id="L59" title="All 2 branches covered.">        if (userDTO == null) {</span>
+<span class="fc" id="L60">            throw new UserNotFoundException(&quot;User not found with ID: &quot; + id);</span>
+        }
+<span class="fc" id="L62">        return userDTO;</span>
+    }
+
+    @PostMapping(Constants.CREATE_USER)
+    public String createUser(@Valid @RequestBody UserAuthDTO userAuthDTO, BindingResult result) {
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (result.hasErrors()) {</span>
+<span class="fc" id="L68">            return &quot;Validation has failed: &quot; + result.getAllErrors();</span>
+        }
+<span class="fc" id="L70">        return userService.createUser(userAuthDTO);</span>
+    }
+
+    @DeleteMapping(Constants.DELETE_USER)
+    public String deleteUser(@PathVariable int id) {
+<span class="fc" id="L75">        userService.deleteUser(id);</span>
+<span class="fc" id="L76">        return &quot;User Deleted&quot;;</span>
+    }
+
+    @PutMapping(Constants.UPDATE_USER)
+    public String updateUser(@AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody UserAuthDTO userAuthDTO, BindingResult result) {
+<span class="fc bfc" id="L81" title="All 2 branches covered.">        if (result.hasErrors()) {</span>
+<span class="fc" id="L82">            return &quot;Validation failed: &quot; + result.getAllErrors();</span>
+        }
+<span class="fc" id="L84">        String email = userDetails.getUsername();</span>
+<span class="fc" id="L85">        UserProfileDTO userDTO = userService.findUserByEmail(email);</span>
+<span class="fc bfc" id="L86" title="All 2 branches covered.">        if (userDTO == null) {</span>
+<span class="fc" id="L87">            throw new UserNotFoundException(&quot;User not found with email: &quot; + email);</span>
+        }
+<span class="fc" id="L89">        int id = userDTO.getUserId();</span>
+<span class="fc" id="L90">        return userService.updateUser(id, userAuthDTO);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.8.202204050719</span></div></body></html>

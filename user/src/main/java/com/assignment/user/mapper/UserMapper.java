@@ -1,7 +1,6 @@
 package com.assignment.user.mapper;
 
 import com.assignment.user.dto.UserAuthDTO;
-import com.assignment.user.dto.UserPasswordDTO;
 import com.assignment.user.dto.UserProfileDTO;
 import com.assignment.user.model.User;
 import org.modelmapper.ModelMapper;
@@ -24,21 +23,11 @@ public class UserMapper {
         return modelMapper.map(user, UserAuthDTO.class);
     }
 
-    public User userDTOtoEntity(UserProfileDTO userDTO) {
+    public User UserDTOtoEntity(UserProfileDTO userDTO) {
         return modelMapper.map(userDTO, User.class);
     }
 
-    public User userDTOtoEntity(UserAuthDTO userDTO) {
+    public User UserDTOtoEntity(UserAuthDTO userDTO) {
         return modelMapper.map(userDTO, User.class);
     }
-
-    public UserPasswordDTO toUserPasswordPatchDTO(User user) {
-        return modelMapper.map(user, UserPasswordDTO.class);
-    }
-
-    public User userPasswordDTO(UserAuthDTO userDTO) {
-        return modelMapper.map(userDTO, User.class);
-    }
-
-
 }

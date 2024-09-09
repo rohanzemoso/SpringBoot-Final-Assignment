@@ -18,11 +18,12 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int userId;
     private String name;
-
-    @Column(unique = true)
     private String email;
     private String password;
 
     @Transient
     List<Post> posts;
 }
+
+
+//cascading
