@@ -12,8 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UserAuthDTO {
 
-    @NotNull(message = "User ID cannot be null")
-    private Integer userId;
+    private int id;
 
     @NotEmpty(message = "Name cannot be empty")
     private String name;

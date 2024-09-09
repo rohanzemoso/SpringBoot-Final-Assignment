@@ -1,21 +1,21 @@
-package com.assignment.user.service;
+package com.assignment.user.service.implementation;
 
 import com.assignment.user.config.JWTService;
 import com.assignment.user.dto.UserAuthDTO;
+import com.assignment.user.dto.UserPasswordDTO;
 import com.assignment.user.dto.UserProfileDTO;
 import com.assignment.user.exception.UserCreationException;
 import com.assignment.user.exception.UserNotFoundException;
 import com.assignment.user.mapper.UserMapper;
 import com.assignment.user.model.User;
 import com.assignment.user.repository.UserRepository;
-import com.assignment.user.service.implementation.UserServiceImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.stubbing.Answer;
+import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -23,11 +23,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
-class UserServiceImplTest {
+@RunWith(MockitoJUnitRunner.class)
+public class UserServiceImplTest {
 
     @Mock
     private UserRepository userRepository;
@@ -50,23 +50,25 @@ class UserServiceImplTest {
     @InjectMocks
     private UserServiceImpl userService;
 
+
     private User user;
     private UserAuthDTO userAuthDTO;
     private UserProfileDTO userProfileDTO;
+    private UserPasswordDTO userPasswordDTO;
     private Authentication authentication;
 
-    @BeforeEach
-    void setUp() {
-        MockitoAnnotations.openMocks(this);
+    @Before
+    public void setUp() {
         user = new User(1, "Rohan", "rohan@gmail.com", "password", null);
         userAuthDTO = new UserAuthDTO(1, "Rohan", "rohan@gmail.com", "password");
         userProfileDTO = new UserProfileDTO(1, "Rohan", "rohan@gmail.com");
+        userPasswordDTO = new UserPasswordDTO("oldPassword", "newPassword");
         authentication = mock(Authentication.class);
     }
 
     @Test
-    void testLoginUser_SuccessfulAuthentication() throws Exception {
-        when(userMapper.UserDTOtoEntity(userAuthDTO)).thenReturn(user);
+    public void testLoginUser_SuccessfulAuthentication() throws Exception {
+        when(userMapper.userDTOtoEntity(userAuthDTO)).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
         when(authentication.isAuthenticated()).thenReturn(true);
@@ -80,14 +82,14 @@ class UserServiceImplTest {
         String result = userService.loginUser(userAuthDTO);
 
         assertEquals("{\"token\":\"mockToken\"}", result);
-        verify(userMapper, times(1)).UserDTOtoEntity(userAuthDTO);
+        verify(userMapper, times(1)).userDTOtoEntity(userAuthDTO);
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
         verify(jwtService, times(1)).generateToken(user.getEmail(), user.getUserId());
     }
 
     @Test
-    void testLoginUser_UserNotFound() throws Exception {
-        when(userMapper.UserDTOtoEntity(userAuthDTO)).thenReturn(user);
+    public void testLoginUser_UserNotFound() throws Exception {
+        when(userMapper.userDTOtoEntity(userAuthDTO)).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
         when(authentication.isAuthenticated()).thenReturn(true);
@@ -100,8 +102,8 @@ class UserServiceImplTest {
     }
 
     @Test
-    void testLoginUser_AuthenticationFailed() throws Exception {
-        when(userMapper.UserDTOtoEntity(userAuthDTO)).thenReturn(user);
+    public void testLoginUser_AuthenticationFailed() throws Exception {
+        when(userMapper.userDTOtoEntity(userAuthDTO)).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(authentication);
         when(authentication.isAuthenticated()).thenReturn(false);
@@ -112,43 +114,41 @@ class UserServiceImplTest {
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
     }
 
-    @Test
-    void testLoginUser_ExceptionThrown() throws Exception {
-        when(userMapper.UserDTOtoEntity(userAuthDTO)).thenReturn(user);
+    @Test(expected = UserNotFoundException.class)
+    public void testLoginUser_ExceptionThrown() throws Exception {
+        when(userMapper.userDTOtoEntity(userAuthDTO)).thenReturn(user);
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
-                .thenAnswer((Answer<Authentication>) invocation -> {
-                    throw new RuntimeException("Authentication error");
-                });
+                .thenThrow(new RuntimeException("Authentication error"));
 
-        assertThrows(UserNotFoundException.class, () -> userService.loginUser(userAuthDTO));
+        userService.loginUser(userAuthDTO);
 
         verify(authenticationManager, times(1)).authenticate(any(UsernamePasswordAuthenticationToken.class));
     }
 
     @Test
-    void testCreateUser_Success() {
-        when(userMapper.UserDTOtoEntity(userAuthDTO)).thenReturn(user);
+    public void testCreateUser_Success() {
+        when(userMapper.userDTOtoEntity(userAuthDTO)).thenReturn(user);
         when(bCryptPasswordEncoder.encode(userAuthDTO.getPassword())).thenReturn("encodedPassword");
         when(userRepository.save(user)).thenReturn(user);
 
         String result = userService.createUser(userAuthDTO);
 
         assertEquals("User Has Been Created!", result);
-        verify(userMapper, times(1)).UserDTOtoEntity(userAuthDTO);
+        verify(userMapper, times(1)).userDTOtoEntity(userAuthDTO);
         verify(bCryptPasswordEncoder, times(1)).encode(userAuthDTO.getPassword());
         verify(userRepository, times(1)).save(user);
     }
 
-    @Test
-    void testCreateUser_Exception() {
-        when(userMapper.UserDTOtoEntity(userAuthDTO)).thenReturn(user);
+    @Test(expected = UserCreationException.class)
+    public void testCreateUser_Exception() {
+        when(userMapper.userDTOtoEntity(userAuthDTO)).thenReturn(user);
         doThrow(RuntimeException.class).when(userRepository).save(user);
 
-        assertThrows(UserCreationException.class, () -> userService.createUser(userAuthDTO));
+        userService.createUser(userAuthDTO);
     }
 
     @Test
-    void testGetUser_Success() {
+    public void testGetUser_Success() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userMapper.toDTOWithoutPassword(user)).thenReturn(userProfileDTO);
 
@@ -160,15 +160,15 @@ class UserServiceImplTest {
         verify(userMapper, times(1)).toDTOWithoutPassword(user);
     }
 
-    @Test
-    void testGetUser_UserNotFound() {
+    @Test(expected = UserNotFoundException.class)
+    public void testGetUser_UserNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.getUser(1));
+        userService.getUser(1);
     }
 
     @Test
-    void testGetUsers_Success() {
+    public void testGetUsers_Success() {
         List<User> userList = Collections.singletonList(user);
         when(userRepository.findAll()).thenReturn(userList);
         when(userMapper.toDTOWithoutPassword(user)).thenReturn(userProfileDTO);
@@ -180,15 +180,15 @@ class UserServiceImplTest {
         verify(userMapper, times(1)).toDTOWithoutPassword(user);
     }
 
-    @Test
-    void testGetUsers_Exception() {
+    @Test(expected = UserNotFoundException.class)
+    public void testGetUsers_Exception() {
         when(userRepository.findAll()).thenThrow(RuntimeException.class);
 
-        assertThrows(UserNotFoundException.class, () -> userService.getUsers());
+        userService.getUsers();
     }
 
     @Test
-    void testDeleteUser_Success() {
+    public void testDeleteUser_Success() {
         doNothing().when(userRepository).deleteById(1L);
 
         userService.deleteUser(1);
@@ -196,15 +196,15 @@ class UserServiceImplTest {
         verify(userRepository, times(1)).deleteById(1L);
     }
 
-    @Test
-     void testDeleteUser_Exception() {
+    @Test(expected = UserNotFoundException.class)
+    public void testDeleteUser_Exception() {
         doThrow(RuntimeException.class).when(userRepository).deleteById(1L);
 
-        assertThrows(UserNotFoundException.class, () -> userService.deleteUser(1));
+        userService.deleteUser(1);
     }
 
     @Test
-     void testFindUserByEmail_Success() {
+    public void testFindUserByEmail_Success() {
         when(userRepository.findUserByEmail("rohan@gmail.com")).thenReturn(user);
         when(userMapper.toDTOWithoutPassword(user)).thenReturn(userProfileDTO);
 
@@ -216,15 +216,15 @@ class UserServiceImplTest {
         verify(userMapper, times(1)).toDTOWithoutPassword(user);
     }
 
-    @Test
-     void testFindUserByEmail_UserNotFound() {
+    @Test(expected = UserNotFoundException.class)
+    public void testFindUserByEmail_UserNotFound() {
         when(userRepository.findUserByEmail("rohan@gmail.com")).thenReturn(null);
 
-        assertThrows(UserNotFoundException.class, () -> userService.findUserByEmail("rohan@gmail.com"));
+        userService.findUserByEmail("rohan@gmail.com");
     }
 
     @Test
-      void testUpdateUser_Success() {
+    public void testUpdateUser_Success() {
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
         when(userRepository.save(user)).thenReturn(user);
 
@@ -235,10 +235,46 @@ class UserServiceImplTest {
         verify(userRepository, times(1)).save(user);
     }
 
-    @Test
-     void testUpdateUser_UserNotFound() {
+    @Test(expected = UserNotFoundException.class)
+    public void testUpdateUser_UserNotFound() {
         when(userRepository.findById(1L)).thenReturn(Optional.empty());
 
-        assertThrows(UserNotFoundException.class, () -> userService.updateUser(1, userAuthDTO));
+        userService.updateUser(1, userAuthDTO);
+    }
+
+    @Test
+    public void testUpdatePassword_Success() {
+        user.setPassword("oldEncodedPassword");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(bCryptPasswordEncoder.matches("oldPassword", "oldEncodedPassword")).thenReturn(true);
+        when(bCryptPasswordEncoder.encode("newPassword")).thenReturn("newEncodedPassword");
+        String result = userService.updatePassword(1, userPasswordDTO);
+        assertEquals("Password has been updated successfully", result);
+        verify(userRepository, times(1)).findById(1L);
+        verify(bCryptPasswordEncoder, times(1)).encode("newPassword");
+        verify(bCryptPasswordEncoder, times(1)).matches("oldPassword", "oldEncodedPassword");
+
+        verify(userRepository, times(1)).save(user);
+    }
+
+
+    @Test
+    public void testUpdatePassword_IncorrectCurrentPassword() {
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(bCryptPasswordEncoder.matches("oldPassword", user.getPassword())).thenReturn(false);
+
+        String result = userService.updatePassword(1, userPasswordDTO);
+
+        assertEquals("failure: incorrect current password", result);
+        verify(userRepository, times(1)).findById(1L);
+        verify(bCryptPasswordEncoder, times(1)).matches("oldPassword", user.getPassword());
+        verify(userRepository, never()).save(any(User.class));
+    }
+
+    @Test(expected = UserNotFoundException.class)
+    public void testUpdatePassword_UserNotFound() {
+        when(userRepository.findById(1L)).thenReturn(Optional.empty());
+
+        userService.updatePassword(1, userPasswordDTO);
     }
 }

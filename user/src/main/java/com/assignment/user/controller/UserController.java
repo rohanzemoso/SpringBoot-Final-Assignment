@@ -1,5 +1,6 @@
 package com.assignment.user.controller;
 
+import com.assignment.user.dto.UserPasswordDTO;
 import com.assignment.user.util.Constants;
 import com.assignment.user.dto.UserProfileDTO;
 import com.assignment.user.dto.UserAuthDTO;
@@ -10,6 +11,7 @@ import com.assignment.user.exception.UserNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
@@ -18,6 +20,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping(Constants.USER_BASE_URL)
+@Validated
 public class UserController {
 
     private final UserService userService;
@@ -34,7 +37,7 @@ public class UserController {
         String username = userDetails.getUsername();
         UserProfileDTO userDTO = userService.findUserByEmail(username);
         if (userDTO == null) {
-            throw new UserNotFoundException("User not found with email: " + username);
+            throw new UserNotFoundException("user not found with email:- " + username);
         }
         int userID = userDTO.getUserId();
         return postServiceClient.getPostsByUserId(userID);
@@ -43,7 +46,7 @@ public class UserController {
     @PostMapping(Constants.LOGIN_USER)
     public String loginUser(@Valid @RequestBody UserAuthDTO userAuthDTO, BindingResult result) {
         if (result.hasErrors()) {
-            return "Validation failed: " + result.getAllErrors();
+            return "Validation failed:- " + result.getAllErrors();
         }
         return userService.loginUser(userAuthDTO);
     }
@@ -71,13 +74,28 @@ public class UserController {
     }
 
     @DeleteMapping(Constants.DELETE_USER)
-    public String deleteUser(@PathVariable int id) {
+    public String deleteUser(@AuthenticationPrincipal UserDetails userDetails, @PathVariable int id) {
+        String email = userDetails.getUsername();
+        UserProfileDTO userDTO = userService.findUserByEmail(email);
+
+        if (userDTO == null) {
+            throw new UserNotFoundException("User not found with email:- " + email);
+        }
+
+        int currentUserId = userDTO.getUserId();
+
+        if (currentUserId != id) {
+            throw new IllegalArgumentException("You can only delete your own account.");
+        }
+
         userService.deleteUser(id);
         return "User Deleted";
     }
 
+
     @PutMapping(Constants.UPDATE_USER)
     public String updateUser(@AuthenticationPrincipal UserDetails userDetails, @Valid @RequestBody UserAuthDTO userAuthDTO, BindingResult result) {
+
         if (result.hasErrors()) {
             return "Validation failed: " + result.getAllErrors();
         }
@@ -89,4 +107,23 @@ public class UserController {
         int id = userDTO.getUserId();
         return userService.updateUser(id, userAuthDTO);
     }
+
+    @PatchMapping(Constants.UPDATE_PASSWORD)
+    public String updatePassword(@AuthenticationPrincipal UserDetails userDetails,
+                                 @Valid @RequestBody UserPasswordDTO userPasswordDTO,
+                                 BindingResult result) {
+        if (result.hasErrors()) {
+            return "Validation failed: " + result.getAllErrors();
+        }
+
+        String email = userDetails.getUsername();
+        UserProfileDTO userDTO = userService.findUserByEmail(email);
+        if (userDTO == null) {
+            throw new UserNotFoundException("User not found with email: " + email);
+        }
+
+        int id = userDTO.getUserId();
+        return userService.updatePassword(id, userPasswordDTO);
+    }
+
 }
